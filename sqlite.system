@@ -1,0 +1,28 @@
+;;; -*- Mode: LISP; Package: :cl-user; BASE: 10; Syntax: ANSI-Common-Lisp; -*-
+;;;
+;;;   Time-stamp: <2018-01-31 10:23:56 IST>
+;;;   Touched: Thu May 19 17:32:09 2011 +0530 <enometh@meer.net>
+;;;   Touched: Wed Jan 31 08:42:39 2018 +0530 <madhu@cs.unm.edu>
+;;;   Bugs-To: madhu@cs.unm.edu
+;;;   Status: Experimental.  Do not redistribute
+;;;   Copyright (C) 2011-2018 Madhu.  All Rights Reserved.
+;;;
+;;; git://github.com/dmitryvk/cl-sqlite.git
+;;;
+(in-package "CL-USER")
+
+(defvar *sqlite-source-dir*
+  (merge-pathnames "Packages/cl-sqlite/" (translate-logical-pathname "EXTERN:")))
+(defvar *sqlite-binary-dir* (binary-directory *sqlite-source-dir*))
+
+(mk:defsystem :sqlite
+  :source-pathname *sqlite-source-dir*
+  :binary-pathname *sqlite-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:iterate :cffi)
+  :components ((:file "sqlite-ffi")
+               (:file "cache")
+               (:file "sqlite" :depends-on ("sqlite-ffi" "cache"))))
+
+#+nil
+(mk:oos :sqlite :load :compile-during-load t)
