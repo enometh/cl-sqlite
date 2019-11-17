@@ -120,7 +120,11 @@
 
 (defcstruct sqlite3)
 
+#-clisp ;madhu 191117
+;; PRINT: not enough stack space for carrying out circularity analysis
 (defctype p-sqlite3 (:pointer (:struct sqlite3)))
+#+clisp
+(defctype p-sqlite3 :pointer)
 
 (defcfun sqlite3-open error-code
   (filename :string)
@@ -236,7 +240,10 @@
   (bytes-count :int)
   (destructor :pointer))
 
+#-clisp					;madhu 191117
 (defconstant destructor-transient-address (mod -1 (expt 2 (* 8 (cffi:foreign-type-size :pointer)))))
+#+clisp
+(defvar destructor-transient-address (mod -1 (expt 2 (* 8 (cffi:foreign-type-size :pointer)))))
 
 (defun destructor-transient () (cffi:make-pointer destructor-transient-address))
 
