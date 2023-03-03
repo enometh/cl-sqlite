@@ -1,18 +1,17 @@
 ;;; -*- Mode: LISP; Package: :cl-user; BASE: 10; Syntax: ANSI-Common-Lisp; -*-
 ;;;
-;;;   Time-stamp: <2018-01-31 10:23:56 IST>
+;;;   Time-stamp: <>
 ;;;   Touched: Thu May 19 17:32:09 2011 +0530 <enometh@meer.net>
-;;;   Touched: Wed Jan 31 08:42:39 2018 +0530 <madhu@cs.unm.edu>
 ;;;   Bugs-To: madhu@cs.unm.edu
 ;;;   Status: Experimental.  Do not redistribute
-;;;   Copyright (C) 2011-2018 Madhu.  All Rights Reserved.
+;;;   Copyright (C) 2011-2023 Madhu.  All Rights Reserved.
 ;;;
-;;; git://github.com/dmitryvk/cl-sqlite.git
+;;; ;madhu 230303 dmitryvk -> TeMPOraL on github
 ;;;
 (in-package "CL-USER")
 
 (defvar *sqlite-source-dir*
-  (merge-pathnames "Packages/cl-sqlite/" (translate-logical-pathname "EXTERN:")))
+  (merge-pathnames "cl-sqlite/" (translate-logical-pathname "EXTERN:")))
 (defvar *sqlite-binary-dir* (binary-directory *sqlite-source-dir*))
 
 (mk:defsystem :sqlite
@@ -26,3 +25,17 @@
 
 #+nil
 (mk:oos :sqlite :load :compile-during-load t)
+
+
+(mk:defsystem :sqlite-tests
+  :source-pathname *sqlite-source-dir*
+  :binary-pathname *sqlite-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:fiveam :sqlite :bordeaux-threads)
+  :components ((:file "sqlite-tests")))
+
+#+nil
+(mk:oos :sqlite-tests :load :compile-during-load t)
+
+#+nil
+(sqlite-tests:RUN-ALL-SQLITE-TESTS)
