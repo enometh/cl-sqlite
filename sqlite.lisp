@@ -30,7 +30,9 @@
            :execute-one-row-m-v
            :last-insert-rowid
            :with-transaction
-           :with-open-database))
+           :with-open-database
+
+   :sqlite-backup))
 
 (in-package :sqlite)
 
@@ -505,3 +507,26 @@ See BIND-PARAMETER for the list of supported parameter types."
                                   (values ,@(iter (for i from 0 below (if (symbolp vars) 1 (length vars)))
                                                   (collect `(statement-column-value ,statement-var ,i))))
                                   (terminate)))))))
+
+(defun sqlite-backup (db path &key (npages -1) (sleep nil) (verbose nil))
+  "Backup open database handle DB to PATH using the SQLITE C-API. If
+NPAGES is a positive number 5, sleep is a non-NIL foat number of
+seconds, 0.25 and verbose is non-NIL, mimic the example program
+`backupDb' in https://sqlite.org/backup.html."
+  (with-open-database (dest path)
+    (let ((p (sqlite-ffi:sqlite3-backup-init
+	      (handle dest) "main" (handle db) "main"))
+	  error-code)
+      (loop do (progn
+		 (setq error-code (sqlite-ffi:sqlite3-backup-step p npages))
+		 (when verbose
+		   (format t "sqlite-backup: ~D left of ~D pages~&"
+			   (sqlite-ffi:sqlite3-backup-remaining p)
+			   (sqlite-ffi:sqlite3-backup-pagecount p)))
+		 (cond ((eql error-code :DONE) (return))
+		       ((member error-code '(:OK :BUSY :LOCKED))
+			(when sleep  (sleep sleep)))
+		       (t (return)))))
+      (sqlite-ffi:sqlite3-backup-finish p)
+      (unless (eql error-code :DONE)
+	(sqlite-error error-code (format nil "error backing up to ~S" path))))))

@@ -76,6 +76,14 @@
    :sqlite3-value-numeric-type
 
    :sqlite3-create-function
+
+   :sqlite3-backup
+   :p-sqlite3-backup
+   :sqlite3-backup-init
+   :sqlite3-backup-step
+   :sqlite3-backup-finish
+   :sqlite3-backup-remaining
+   :sqlite3-backup-pagecount
 ))
 
 (in-package :sqlite-ffi)
@@ -453,3 +461,29 @@
 
 #+nil
 (sqlite:execute-to-list *db* "SELECT log_e(100)")
+
+
+(defcstruct sqlite3-backup)
+
+(defctype sqlite3-backup (:struct sqlite3-backup))
+
+(defctype p-sqlite3-backup (:pointer sqlite3-backup))
+
+(defcfun sqlite3-backup-init p-sqlite3-backup
+  (p-dest p-sqlite3-context)
+  (z-dest-name :string)
+  (p-source p-sqlite3-context)
+  (z-source-name :string))
+
+(defcfun sqlite3-backup-step error-code
+  (p p-sqlite3-backup)
+  (npage :int))
+
+(defcfun sqlite3-backup-finish error-code
+  (p p-sqlite3-backup))
+
+(defcfun sqlite3-backup-remaining :int
+  (p p-sqlite3-backup))
+
+(defcfun sqlite3-backup-pagecount :int
+  (p p-sqlite3-backup))
